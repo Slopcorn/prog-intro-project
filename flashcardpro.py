@@ -19,15 +19,13 @@ class Flashcard(object):
         is going to be basically creation date.
         '''
         #  Assign the flashcard text.
-        #  Everything is going to have getter and setter methods
-        # with checks built in to prevent disasters happening.
         self.front = str(front)
         self.back  = str(back)
         self.ease  = ease
         self.streak   = streak
         self.next_due = next_due
     
-    # These will be simple, all good.
+    # Setting the card text.
     def get_front(self):
         # in: none
         # out: string
@@ -86,13 +84,56 @@ class Flashcard(object):
         self.next_due = next_due
         
     def update_next_due(self, delta):
-        # in: float, days to push next due forward relative to answer time.
+        # in: float/int, days to push next due forward relative to answer time.
         # out: none
         self.next_due = dt.datetime.now() + dt.timedelta(delta)
-    '''
-        an idea: incorrect card can be delayed by a day by use of certain input instead of automatically.
-                 if wrong (performance 0) then set to current, (1, 2) push back a day, else (2-5) use SM2 algo.
-    TODO: adding methods to automatically update all necessary card data based on a performance value.
-          adding methods to be able to sort the cards by due date. any magic methods that may be of use.
-          maybe there is a way to be able to use regular sort functions on a list of cards.
-    '''
+    
+    def card_update(self, performance):
+        # in: integer from 0-5. Performance value assigned by user themselves via some interface.
+        # out: none
+        # This method implements SM2 and does the heavy lifting.
+        # Nothing else should be necessary unless you wish to edit card data -
+        # for example, to change the back and front.
+        self.set_ease(self.get_ease() + (-0.8 + 0.28*performance + 0.02*performance**2))
+        if performance < 3: # Failure states: 0, 1, 2
+            self.reset_streak()
+            self.update_next_due(1.0) # due in one day if incorrect
+        else: # Correct states: 3, 4, 5
+            self.iter_streak()
+            self.update_next_due(6*self.get_ease()**(self.get_streak()-1))
+    
+    # Now to set the class magic methods.
+    def __str__(self):
+        # Conversion into string
+        # What to show in the console upon print
+        return "Front: \"{}\" Back: \"{}\" Ease: \"{}\" Streak: \"{}\" Due: \"{}\"".format(
+            self.get_front(),self.get_back(),self.get_ease(),self.get_streak(),self.get_next_due())
+    
+    def __repr__(self):
+        # Similar. Representation of the data - more or less how to recreate the card.
+        return "Flashcard(\"{}\",\"{}\",{},{},{})".format(
+            self.get_front(),self.get_back(),self.get_ease(),self.get_streak(),self.get_next_due().__repr__())
+        # nasty direct call to magic method
+    
+    def __eq__(self, other):
+        # Defines equality operator ==. We can use this to find duplicate cards.
+        # Let's use only the front and back text for these ones.
+        # Takes advantage of already existing string comparisons.
+        return self.get_front() == other.get_front() and self.get_back() == other.get_back()
+    def __ne__(self, other):
+        # Defines inequality. Essentially inverse of previous.
+        return not (self.get_front() == other.get_front() and self.get_back() == other.get_back())
+    
+    # more comparison operators
+    # These should make it compatible with standard sorting functions
+    # so that a list of flashcards can easily be sorted by their due dates
+    # with the .sort() method.
+    def __lt__(self, other):
+        return self.get_next_due() <  other.get_next_due()
+    def __gt__(self, other):
+        return self.get_next_due() >  other.get_next_due()
+    def __le__(self, other):
+        return self.get_next_due() <= other.get_next_due()
+    def __ge__(self, other):
+        return self.get_next_due() >= other.get_next_due()
+    # More card types can perhaps be added with inheritance.
