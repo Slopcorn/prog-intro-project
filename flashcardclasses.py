@@ -1,8 +1,66 @@
 # LTAT.03.001 - Introduction to Computer Programming @ Tartu Univesity - Project
 # 11/2018
+# This file implements the classes used in the program.
 
 import datetime as dt # Necessary classes for due dates.
 
+class Deck(object):
+    # Basically should be really simple: A list of flashcards
+    # with a few extra methods.
+    def __init__(self):
+        self.cards = []
+        # maybe something more?
+        
+    def sort(self):
+        self.cards.sort()
+    
+    def get_card(self, i):
+        # in: int
+        # returns a card itself.
+        return self.cards[i]
+    
+    def get_card_display(self, i):
+        # in: int
+        # returns a 2-tuple of card back and front
+        temp = self.cards[i]
+        return (temp.get_front(),temp.get_back())
+    
+    def edit_card(self, i, performance):
+        # in: int, int
+        # updates card of given index, should sort after this.
+        self.cards[i].card_update(performance)
+        self.sort()
+        
+    def count_due(self):
+        # out: int
+        self.sort()
+        
+        n = 0
+        time = dt.datetime.now()
+        for card in self.cards:
+            if card.get_next_due() <= time:
+                n += 1
+            else: 
+                break
+        return n
+    
+    def add_card(self, card):
+        # in: Flashcard
+        if type(card) == Flashcard:
+            self.cards.append(card)
+            
+    def remove_card(self, card):
+        # in: Flashcard
+        # finds all cards with same front and back text
+        while card in self.cards:
+            del self.cards[self.cards.index(card)]
+    
+    def remove_card_i(self, i):
+        # in: int
+        # removes card by index
+        del self.cards[i]
+            
+    
 class Flashcard(object):
     # We'll be implementing the SuperMemo 2 algorithm to calculate due dates.
     # Hopefully this class will be extensible.
