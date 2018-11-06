@@ -7,10 +7,15 @@ import datetime as dt # Necessary classes for due dates.
 class Deck(object):
     # Basically should be really simple: A list of flashcards
     # with a few extra methods.
-    def __init__(self):
+    def __init__(self, title):
         self.cards = []
-        # maybe something more?
-        
+        self.title = title
+    
+    def set_title(self, title):
+        self.title = str(title)
+    def get_title(self):
+        return self.title
+    
     def sort(self):
         self.cards.sort()
     
@@ -59,7 +64,11 @@ class Deck(object):
         # in: int
         # removes card by index
         del self.cards[i]
-            
+    def __len__(self):
+        # how many cards total
+        return len(self.cards)
+    def __iter__(self):
+        return iter(self.cards)
     
 class Flashcard(object):
     # We'll be implementing the SuperMemo 2 algorithm to calculate due dates.
@@ -145,6 +154,11 @@ class Flashcard(object):
         # in: float/int, days to push next due forward relative to answer time.
         # out: none
         self.next_due = dt.datetime.now() + dt.timedelta(delta)
+        
+    def get_all_data(self):
+        # in: none
+        # out: returns list of all card data [str, str, float, int, datetime]
+        return [self.get_front(), self.get_back(), self.get_ease(), self.get_streak(), self.get_next_due()]
     
     def card_update(self, performance):
         # in: integer from 0-5. Performance value assigned by user themselves via some interface.
