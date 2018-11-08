@@ -1,9 +1,11 @@
 # LTAT.03.001 - Introduction to Computer Programming @ Tartu Univesity - Project
 # 11/2018
 # This file implements the program functionality on command line.
-import flashcardclasses as fc
 
+import flashcardclasses as fc
 deck_arr = [] # list of decks to be loaded in
+
+####################################################
 
 def load_data(filename = "data.txt", arr = deck_arr):
     # in: str, list
@@ -58,3 +60,17 @@ def print_all_cards(reload = 0, arr = deck_arr):
         print("Deck name: " + deck.get_title())
         for card in deck:
             print('\t' + str(card))
+
+####################################################
+# Try to load the data.
+try:
+    load_data()
+except FileNotFoundError:
+    save_data() # creates file should it not exist
+
+####################################################
+# Command line interface.
+
+####################################################
+# Program loop.
+    

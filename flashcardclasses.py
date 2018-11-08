@@ -69,7 +69,16 @@ class Deck(object):
         return len(self.cards)
     def __iter__(self):
         return iter(self.cards)
-    
+    # implement sort by due cards
+    def __lt__(self, other):
+        return self.count_due() <  other.count_due()
+    def __gt__(self, other):
+        return self.count_due() >  other.count_due()
+    def __le__(self, other):
+        return self.count_due() <= other.count_due()
+    def __ge__(self, other):
+        return self.count_due() >= other.count_due()
+
 class Flashcard(object):
     # We'll be implementing the SuperMemo 2 algorithm to calculate due dates.
     # Hopefully this class will be extensible.
