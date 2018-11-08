@@ -19,12 +19,12 @@ class Deck(object):
     def sort(self):
         self.cards.sort()
     
-    def get_card(self, i):
+    def get_card(self, i=0):
         # in: int
         # returns a card itself.
         return self.cards[i]
     
-    def get_card_display(self, i):
+    def get_card_display(self, i=0):
         # in: int
         # returns a 2-tuple of card back and front
         temp = self.cards[i]
@@ -39,7 +39,6 @@ class Deck(object):
     def count_due(self):
         # out: int
         self.sort()
-        
         n = 0
         time = dt.datetime.now()
         for card in self.cards:
@@ -49,21 +48,28 @@ class Deck(object):
                 break
         return n
     
-    def add_card(self, card):
-        # in: Flashcard
-        if type(card) == Flashcard:
-            self.cards.append(card)
+    def add_card(self, front, back):
+        # in: str, str
+        self.cards.append(Flashcard(front, back))
+        self.sort()
             
     def remove_card(self, card):
         # in: Flashcard
         # finds all cards with same front and back text
         while card in self.cards:
             del self.cards[self.cards.index(card)]
+        self.sort()
     
     def remove_card_i(self, i):
         # in: int
         # removes card by index
         del self.cards[i]
+    
+    def replace_card(self, i, new_card):
+        # bit of a nasty hack to update card in the main program
+        # in: index int, Flashcard
+        self.cards[i] = new_card
+    
     def __len__(self):
         # how many cards total
         return len(self.cards)
@@ -182,6 +188,11 @@ class Flashcard(object):
         else: # Correct states: 3, 4, 5
             self.iter_streak()
             self.update_next_due(6*self.get_ease()**(self.get_streak()-1))
+    
+    def card_reset(self): # resets card data to default
+        self.ease = 2.5
+        self.streak = 0
+        self.next_due = dt.datetime.now()
     
     # Now to set the class magic methods.
     def __str__(self):

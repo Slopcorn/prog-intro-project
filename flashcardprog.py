@@ -70,7 +70,118 @@ except FileNotFoundError:
 
 ####################################################
 # Command line interface.
+def main_screen():
+    opt = {0: "q", 1: decks_screen, 2: study_screen}
+    txt = ["Quit", "Decks", "Study"]
 
+    for i in range(len(opt)):
+        print("{}: {}".format(str(i), txt[i]))
+
+    n = int(input("Option: "))
+    return opt[n]
+
+def decks_screen(arr = deck_arr):
+    opt = {0:"q", 1: main_screen, 2: new_deck, 3: delete_deck, 4: edit_deck}
+    txt = ["Quit", "Home", "New deck", "Delete deck", "Edit deck"]
+
+    print("Your decks are currently as follows: ")
+    for i in range(len(arr)):
+        print("{}: {}, due: {}".format(str(i), arr[i].get_title(), arr[i].count_due()))
+    
+    for i in range(len(opt)):
+        print("{}: {}".format(str(i), txt[i]))
+    n = int(input("Option: "))
+    return opt[n]
+
+def new_deck(arr = deck_arr):
+    title = input("Enter a title for your new deck: ")
+    arr.append(fc.Deck(title))
+    return decks_screen
+
+def delete_deck(arr = deck_arr):
+    n = int(input("Enter the number of the deck you wish to delete: "))
+    del arr[n]
+    return decks_screen
+
+def edit_deck(arr = deck_arr):
+    def new_card(deck):
+        front = input("Enter front side of card")
+        back =  input("Enter back side of card")
+        deck.add_card(front, back)
+    def delete_card(deck):
+        n = int(input("Enter the number of the card you wish to delete: "))
+        deck.remove_card_i(deck, n)
+    def edit_card(deck):
+        n = int(input("Enter the number of the card you wish to edit: "))
+        print("Current card data: {}".format(deck.get_card(n)))
+
+        active_card = deck.get_card(n)
+
+        change_front_choice = input("Do you wish to change the front of the card? y/n: ")
+        while change_front_choice.lower() != "y" and change_front_choice.lower() != "n":
+            if change_front_choice.lower() == "y":
+                new_front = input("Enter the new front side of the card: ")
+                active_card.set_front(new_front)
+            elif change_front_choice.lower() != "n":
+                change_front_choice = input("Invalid input. Change the front of the card? y/n: ")
+
+        change_back_choice = input("Do you wish to change the back of the card? y/n: ")
+        while change_back_choice.lower() != "y" and change_back_choice.lower() != "n":
+            if change_back_choice.lower() == "y":
+                new_back = input("Enter the new back side of the card: ")
+                active_card.set_back(new_back)
+            elif change_back_choice.lower() != "n":
+                change_back_choice = input("Invalid input. Change the back of the card? y/n: ")
+        
+        reset_data_choice = input("Do you wish to reset the data of the card? y/n: ")
+        while reset_data_choice.lower() != "y" and reset_data_choice.lower() != "n":
+            if reset_data_choice.lower() == "y":
+                active_card.card_reset()
+            elif reset_data_choice.lower() != "n":
+                reset_data_choice = input("Invalid input. Reset the data of the card? y/n: ")
+        deck.replace_card(n, active_card)
+
+    deck_n = int(input("Enter the number of the deck you wish to edit: "))
+    active_deck = arr[deck_n]
+    
+    print_cards = input("Print all cards? y/n: ")
+    while print_cards.lower() != "y" and print_cards.lower() != "n":
+        if print_cards.lower() == "y":
+            for i in range(len(active_deck)):
+                active_card = active_deck.get_card(i)
+                front = active_card.get_front()
+                back  = active_card.get_back()
+                print("{}: Front: {}, Back: {}".format(str(i), front, back))
+        elif print_cards.lower() == "n":
+            print("Cards will not be printed.")
+        else:
+            print("Invalid input. Print all cards? y/n: ")
+    
+    opt = {0:"", 1: main_screen, 2: new_card, 3: delete_card, 4: edit_card}
+    txt = ["Back to decks", "Home", "New card", "Delete card", "Edit card"]
+
+    for i in range(len(opt)):
+        print("{}: {}".format(str(i), txt[i]))
+
+    n = int(input("Option: "))
+    while n != 0:
+        if n == 2 or n == 3 or n == 4:
+            opt[n](arr[deck_n])
+            n = int(input("Option: "))
+        else:
+            opt[n]()
+            n = int(input("Option: "))
+
+    return decks_screen
+
+    
+def study_screen(arr = deck_arr):
+    print ("not implemented")
+    
 ####################################################
 # Program loop.
-    
+chosen = main_screen
+while chosen != "q":
+    chosen = chosen()
+else:
+    save_data()
