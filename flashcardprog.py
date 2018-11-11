@@ -29,8 +29,7 @@ def load_data(filename = "data.txt", arr = deck_arr):
             elif data_iter == 5: # due
                 data_list.append(fc.dt.datetime.fromtimestamp(float(line)))
                 # adding cards to latest deck...
-                arr[-1].add_card(fc.Flashcard(data_list[0],data_list[1],data_list[2],
-                                 data_list[3],data_list[4]))
+                arr[-1].load_card(fc.Flashcard(data_list[0],data_list[1],data_list[2],data_list[3],data_list[4]))
                 data_list = [] # reset data list and iterator for new data
                 data_iter = 0
         else: # if not data, add new deck to list.
@@ -105,8 +104,8 @@ def delete_deck(arr = deck_arr):
 
 def edit_deck(arr = deck_arr):
     def new_card(deck):
-        front = input("Enter front side of card")
-        back =  input("Enter back side of card")
+        front = input("Enter front side of card: ")
+        back =  input("Enter back side of card: ")
         deck.add_card(front, back)
     def delete_card(deck):
         n = int(input("Enter the number of the card you wish to delete: "))
@@ -119,26 +118,23 @@ def edit_deck(arr = deck_arr):
 
         change_front_choice = input("Do you wish to change the front of the card? y/n: ")
         while change_front_choice.lower() != "y" and change_front_choice.lower() != "n":
-            if change_front_choice.lower() == "y":
-                new_front = input("Enter the new front side of the card: ")
-                active_card.set_front(new_front)
-            elif change_front_choice.lower() != "n":
-                change_front_choice = input("Invalid input. Change the front of the card? y/n: ")
+            change_front_choice = input("Invalid input. Change the front of the card? y/n: ")
+        if change_front_choice.lower() == "y":
+            new_front = input("Enter the new front side of the card: ")
+            active_card.set_front(new_front)
 
         change_back_choice = input("Do you wish to change the back of the card? y/n: ")
         while change_back_choice.lower() != "y" and change_back_choice.lower() != "n":
-            if change_back_choice.lower() == "y":
-                new_back = input("Enter the new back side of the card: ")
-                active_card.set_back(new_back)
-            elif change_back_choice.lower() != "n":
-                change_back_choice = input("Invalid input. Change the back of the card? y/n: ")
-        
+            change_back_choice = input("Invalid input. Change the back of the card? y/n: ")
+        if change_back_choice.lower() == "y":
+            new_back = input("Enter the new back side of the card: ")
+            active_card.set_back(new_back)
+
         reset_data_choice = input("Do you wish to reset the data of the card? y/n: ")
         while reset_data_choice.lower() != "y" and reset_data_choice.lower() != "n":
-            if reset_data_choice.lower() == "y":
-                active_card.card_reset()
-            elif reset_data_choice.lower() != "n":
-                reset_data_choice = input("Invalid input. Reset the data of the card? y/n: ")
+            reset_data_choice = input("Invalid input. Reset the data of the card? y/n: ")
+        if reset_data_choice.lower() == "y":
+            active_card.card_reset()
         deck.replace_card(n, active_card)
 
     deck_n = int(input("Enter the number of the deck you wish to edit: "))
@@ -146,42 +142,63 @@ def edit_deck(arr = deck_arr):
     
     print_cards = input("Print all cards? y/n: ")
     while print_cards.lower() != "y" and print_cards.lower() != "n":
-        if print_cards.lower() == "y":
-            for i in range(len(active_deck)):
-                active_card = active_deck.get_card(i)
-                front = active_card.get_front()
-                back  = active_card.get_back()
-                print("{}: Front: {}, Back: {}".format(str(i), front, back))
-        elif print_cards.lower() == "n":
-            print("Cards will not be printed.")
-        else:
-            print("Invalid input. Print all cards? y/n: ")
+        print_cards = input("Invalid input. Print all cards? y/n: ")
+    if print_cards.lower() == "y":
+        for i in range(len(active_deck)):
+            active_card = active_deck.get_card(i)
+            front = active_card.get_front()
+            back  = active_card.get_back()
+            print("{}: Front: {}, Back: {}".format(str(i), front, back))
     
     opt = {0:"", 1: main_screen, 2: new_card, 3: delete_card, 4: edit_card}
     txt = ["Back to decks", "Home", "New card", "Delete card", "Edit card"]
 
     for i in range(len(opt)):
         print("{}: {}".format(str(i), txt[i]))
-
     n = int(input("Option: "))
     while n != 0:
         if n == 2 or n == 3 or n == 4:
             opt[n](arr[deck_n])
             n = int(input("Option: "))
-        else:
-            opt[n]()
-            n = int(input("Option: "))
-
+        if n == 1:
+            return opt[n]
     return decks_screen
 
-    
-def study_screen(arr = deck_arr):
-    print ("not implemented")
+def study_screen(arr=deck_arr):
+    print("Your decks are currently as follows: ")
+    for i in range(len(arr)):
+        print("{}: {}, due: {}".format(str(i), arr[i].get_title(), arr[i].count_due()))
+    n = int(input("Enter the number of the deck you wish to study with or -1 to cancel: "))
+    if n == -1:
+        return main_screen
+    else:
+        active_deck = arr[n]
+        while active_deck.get_card().is_due():
+            data = active_deck.get_card_display()
+            print(data[0])
+            input("Press enter to reveal back side.")
+            print(data[1])
+            print("Rate your ease of recall. -1 to quit.")
+            performance = int(input("0: Failed, 4: Hard, 5: Medium, 6: Easy : "))
+            while performance < -1 or performance > 6:
+                performance = int(input("0: Failed, 4: Hard, 5: Medium, 6: Easy : "))
+            if performance == -1:
+                return study_screen
+            active_deck.edit_card(0, performance)
+            cont = input("Continue? y/n: ")
+            while cont.lower() != "y" and cont.lower() != "n":
+                cont = input("Invalid input. Continue? y/n: ")
+            if cont.lower() == "n":
+                return study_screen
+        print("No more cards are due.")
+        return study_screen
     
 ####################################################
 # Program loop.
 chosen = main_screen
 while chosen != "q":
     chosen = chosen()
+    save_data()
 else:
     save_data()
+    print("Goodbye!")

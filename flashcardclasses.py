@@ -52,6 +52,11 @@ class Deck(object):
         # in: str, str
         self.cards.append(Flashcard(front, back))
         self.sort()
+    
+    def load_card(self, card):
+        # in: Flashcard
+        self.cards.append(card)
+        self.sort()
             
     def remove_card(self, card):
         # in: Flashcard
@@ -69,6 +74,7 @@ class Deck(object):
         # bit of a nasty hack to update card in the main program
         # in: index int, Flashcard
         self.cards[i] = new_card
+        self.sort()
     
     def __len__(self):
         # how many cards total
@@ -164,6 +170,10 @@ class Flashcard(object):
         # in: dt.datetime
         # out: none
         self.next_due = next_due
+    
+    def is_due(self):
+        # returns boolean True if the card is true, False otherwise.
+        return self.next_due <= dt.datetime.now()
         
     def update_next_due(self, delta):
         # in: float/int, days to push next due forward relative to answer time.
@@ -181,11 +191,11 @@ class Flashcard(object):
         # This method implements SM2 and does the heavy lifting.
         # Nothing else should be necessary unless you wish to edit card data -
         # for example, to change the back and front.
-        self.set_ease(self.get_ease() + (-0.8 + 0.28*performance + 0.02*performance**2))
         if performance < 3: # Failure states: 0, 1, 2
             self.reset_streak()
-            self.update_next_due(1.0) # due in one day if incorrect
+            self.update_next_due(0) # due immediately when incorrect
         else: # Correct states: 3, 4, 5
+            self.set_ease(self.get_ease() + (-0.8 + 0.28*performance + 0.02*performance**2))
             self.iter_streak()
             self.update_next_due(6*self.get_ease()**(self.get_streak()-1))
     
